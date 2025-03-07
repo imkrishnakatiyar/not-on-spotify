@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orpheus</title>
+    <title>YouTube Search</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -84,7 +84,7 @@
     </style>
 </head>
 <body>
-    <h2>Orpheus</h2>
+    <h2>YouTube Search</h2>
     <input type="text" id="searchQuery" placeholder="Search YouTube...">
     <button onclick="searchYouTube(true)">Search</button>
     
@@ -99,7 +99,7 @@
         let query = '';
         let videoQueue = [];
         let currentVideoIndex = 0;
-        const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg';
+        const apiKey = 'YOUR_API_KEY';
         
         async function searchYouTube(newSearch = false) {
             if (newSearch) {
