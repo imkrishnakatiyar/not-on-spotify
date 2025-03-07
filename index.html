@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input {
+            width: 60%;
+            padding: 10px;
+            margin: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .video {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>YouTube Search</h2>
+    <input type="text" id="searchQuery" placeholder="Search YouTube...">
+    <button onclick="searchYouTube()">Search</button>
+    <div class="results" id="results"></div>
+
+    <script>
+        async function searchYouTube() {
+            const query = document.getElementById('searchQuery').value;
+            const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg';
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            data.items.forEach(item => {
+                const videoId = item.id.videoId;
+                const title = item.snippet.title;
+                const videoElement = document.createElement('div');
+                videoElement.classList.add('video');
+                videoElement.innerHTML = `
+                    <h3>${title}</h3>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+                `;
+                resultsDiv.appendChild(videoElement);
+            });
+        }
+    </script>
+</body>
+</html>
