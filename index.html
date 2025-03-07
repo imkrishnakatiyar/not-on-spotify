@@ -84,6 +84,8 @@
     <script>
         let nextPageToken = '';
         let query = '';
+        let videoQueue = [];
+        let currentVideoIndex = 0;
         const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg';
         
         async function searchYouTube(newSearch = false) {
@@ -91,6 +93,8 @@
                 document.getElementById('results').innerHTML = '';
                 nextPageToken = '';
                 query = document.getElementById('searchQuery').value;
+                videoQueue = [];
+                currentVideoIndex = 0;
             }
             if (!query) return;
             
@@ -104,6 +108,7 @@
             data.items.forEach(item => {
                 const videoId = item.id.videoId;
                 const title = item.snippet.title;
+                videoQueue.push(videoId);
                 const videoElement = document.createElement('div');
                 videoElement.classList.add('video');
                 videoElement.innerHTML = `
@@ -116,9 +121,28 @@
         }
         
         function playVideo(videoId) {
-            document.getElementById('mainVideo').src = `https://www.youtube.com/embed/${videoId}`;
+            currentVideoIndex = videoQueue.indexOf(videoId);
+            document.getElementById('mainVideo').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
         }
-
+        
+        function playNextVideo() {
+            if (currentVideoIndex < videoQueue.length - 1) {
+                currentVideoIndex++;
+                playVideo(videoQueue[currentVideoIndex]);
+            }
+        }
+        
+        document.getElementById('mainVideo').addEventListener('load', () => {
+            const iframe = document.getElementById('mainVideo');
+            iframe.contentWindow.postMessage('{"event":"command","func":"onStateChange","args":""}', '*');
+        });
+        
+        window.addEventListener('message', (event) => {
+            if (event.data === 0) { // Video ended
+                playNextVideo();
+            }
+        });
+        
         window.addEventListener('scroll', () => {
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
                 searchYouTube(false);
