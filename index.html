@@ -99,38 +99,50 @@
         let query = '';
         let videoQueue = [];
         let currentVideoIndex = 0;
-        const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg';
+        const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg'; // Replace with a valid API key
         
         async function searchYouTube(newSearch = false) {
             if (newSearch) {
                 document.getElementById('results').innerHTML = '';
                 nextPageToken = '';
-                query = document.getElementById('searchQuery').value;
+                query = document.getElementById('searchQuery').value.trim();
                 videoQueue = [];
                 currentVideoIndex = 0;
             }
             if (!query) return;
             
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=10&key=${apiKey}&pageToken=${nextPageToken}`;
-            
-            const response = await fetch(url);
-            const data = await response.json();
-            nextPageToken = data.nextPageToken || '';
-            const resultsDiv = document.getElementById('results');
-            
-            data.items.forEach(item => {
-                const videoId = item.id.videoId;
-                const title = item.snippet.title;
-                videoQueue.push(videoId);
-                const videoElement = document.createElement('div');
-                videoElement.classList.add('video');
-                videoElement.innerHTML = `
-                    <h3>${title}</h3>
-                    <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" width="100%" style="border-radius: 10px;">
-                `;
-                videoElement.onclick = () => playVideo(videoId);
-                resultsDiv.appendChild(videoElement);
-            });
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=10&key=${apiKey}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (!data.items) {
+                    console.error('YouTube API Error:', data);
+                    return;
+                }
+                nextPageToken = data.nextPageToken || '';
+                const resultsDiv = document.getElementById('results');
+                
+                data.items.forEach(item => {
+                    if (item.id && item.id.videoId) {
+                        const videoId = item.id.videoId;
+                        const title = item.snippet.title;
+                        videoQueue.push(videoId);
+                        const videoElement = document.createElement('div');
+                        videoElement.classList.add('video');
+                        videoElement.innerHTML = `
+                            <h3>${title}</h3>
+                            <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" width="100%" style="border-radius: 10px;">
+                        `;
+                        videoElement.onclick = () => playVideo(videoId);
+                        resultsDiv.appendChild(videoElement);
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching YouTube data:', error);
+            }
         }
         
         function playVideo(videoId) {
