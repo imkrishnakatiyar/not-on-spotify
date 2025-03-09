@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Playlist Search</title>
+    <title>YouTube Playlist & Music Video Search</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -84,8 +84,8 @@
     </style>
 </head>
 <body>
-    <h2>YouTube Playlist Search</h2>
-    <input type="text" id="searchQuery" placeholder="Search YouTube Playlists...">
+    <h2>YouTube Playlist & Music Video Search</h2>
+    <input type="text" id="searchQuery" placeholder="Search YouTube Playlists & Music Videos...">
     <button onclick="searchYouTube(true)">Search</button>
     
     <div class="video-player" id="videoPlayer">
@@ -106,7 +106,7 @@
             if (!query) return;
             
             try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=playlist&maxResults=10&key=${apiKey}`;
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=playlist,video&videoCategoryId=10&maxResults=10&key=${apiKey}`;
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -121,17 +121,26 @@
                 resultsDiv.innerHTML = '';
                 
                 data.items.forEach(item => {
-                    if (item.id && item.id.playlistId) {
+                    let videoElement = document.createElement('div');
+                    videoElement.classList.add('video');
+                    let title = item.snippet.title;
+                    let thumbnail = item.snippet.thumbnails.high.url;
+                    
+                    if (item.id.playlistId) {
                         const playlistId = item.id.playlistId;
-                        const title = item.snippet.title;
-                        const videoElement = document.createElement('div');
-                        videoElement.classList.add('video');
                         videoElement.innerHTML = `
-                            <h3>${title}</h3>
-                            <img src="${item.snippet.thumbnails.high.url}" width="100%" style="border-radius: 10px;" onclick="playPlaylist('${playlistId}')">
+                            <h3>${title} (Playlist)</h3>
+                            <img src="${thumbnail}" width="100%" style="border-radius: 10px;" onclick="playPlaylist('${playlistId}')">
                         `;
-                        resultsDiv.appendChild(videoElement);
+                    } else if (item.id.videoId) {
+                        const videoId = item.id.videoId;
+                        videoElement.innerHTML = `
+                            <h3>${title} (Music Video)</h3>
+                            <img src="${thumbnail}" width="100%" style="border-radius: 10px;" onclick="playVideo('${videoId}')">
+                        `;
                     }
+                    
+                    resultsDiv.appendChild(videoElement);
                 });
             } catch (error) {
                 console.error('Error fetching YouTube data:', error);
@@ -140,6 +149,10 @@
         
         function playPlaylist(playlistId) {
             document.getElementById('mainVideo').src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1`;
+        }
+        
+        function playVideo(videoId) {
+            document.getElementById('mainVideo').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         }
     </script>
 </body>
