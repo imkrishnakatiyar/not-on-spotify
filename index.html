@@ -106,21 +106,26 @@
             if (!query) return;
             
             try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=playlist,video&videoCategoryId=10&maxResults=10&key=${apiKey}`;
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                // Fetch playlists
+                const playlistUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=playlist&maxResults=5&key=${apiKey}`;
+                const videoUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&maxResults=5&key=${apiKey}`;
+                
+                const [playlistResponse, videoResponse] = await Promise.all([
+                    fetch(playlistUrl),
+                    fetch(videoUrl)
+                ]);
+                
+                if (!playlistResponse.ok || !videoResponse.ok) {
+                    throw new Error('Failed to fetch YouTube data');
                 }
-                const data = await response.json();
-                if (!data.items || data.items.length === 0) {
-                    console.error('YouTube API Error:', data);
-                    return;
-                }
+                
+                const playlistData = await playlistResponse.json();
+                const videoData = await videoResponse.json();
                 
                 const resultsDiv = document.getElementById('results');
                 resultsDiv.innerHTML = '';
                 
-                data.items.forEach(item => {
+                [...(playlistData.items || []), ...(videoData.items || [])].forEach(item => {
                     let videoElement = document.createElement('div');
                     videoElement.classList.add('video');
                     let title = item.snippet.title;
