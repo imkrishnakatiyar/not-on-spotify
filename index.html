@@ -2,7 +2,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Trending YouTube Music Videos (India)</title>
+<title>Orpheus</title>
 
 <style>
 
@@ -212,7 +212,7 @@
 
 </head><body><div class="container">
 
-    <h1>Top Trending Music Videos in India</h1>
+    <h1>Orpheus</h1>
 
     <div class="search-bar">
 
@@ -275,6 +275,11 @@
 
 
 <script>
+ if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').then(() => {
+                console.log('Service Worker Registered');
+            });
+        } 
 
     const API_KEY_PLAYLISTS = "AIzaSyAB5ZP3jnLtjz3IPRRrCe66yElwAJh8TsY";
 
