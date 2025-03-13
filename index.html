@@ -1,186 +1,415 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orpheus</title>
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-            background-color: white;
-            color: black;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .dark-mode {
-            background-color: #181818;
-            color: white;
-        }
-        input {
-            width: 60%;
-            padding: 10px;
-            margin: 10px;
-        }
-        button {
-            padding: 10px 15px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        iframe {
-            width: 560px;
-            height: 315px;
-            margin-top: 20px;
-        }
-        .results {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            justify-content: center;
-            padding: 20px;
-        }
-        .video {
-            background-color: #282828;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .video:hover {
-            transform: scale(1.05);
-        }
-        .video h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #58a6ff;
-        }
-        .audio-player {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #282828;
-            border-radius: 12px;
-            text-align: center;
-            color: white;
-            display: none;
-        }
-        .audio-player audio {
-            width: 100%;
-        }
-    </style>
-</head>
-<body>
-    <h2>Orpheus</h2>
-    <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
-    <br>
-    <input type="text" id="playlistUrl" placeholder="Enter YouTube Playlist URL">
-    <button onclick="playPlaylist()">Play Playlist</button>
-    <br>
-    <input type="text" id="searchQuery" placeholder="Search YouTube & Spotify...">
-    <button onclick="searchAll(true)">Search</button>
-    <br>
-    <iframe id="videoFrame" frameborder="0" allow="autoplay" allowfullscreen></iframe>
-    <div class="results" id="results"></div>
-    <div class="audio-player" id="audioPlayer">
-        <h3>Now Playing: <span id="audioTitle"></span></h3>
-        <audio controls id="spotifyAudio"></audio>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Trending YouTube Music Videos (India)</title>
+
+<style>
+
+    body {
+
+        font-family: 'Arial', sans-serif;
+
+        background-color: #121212;
+
+        color: white;
+
+        margin: 0;
+
+        padding: 0;
+
+    }
+
+
+
+    .container {
+
+        max-width: 90%;
+
+        margin: 20px auto;
+
+        padding: 20px;
+
+    }
+
+
+
+    h1 {
+
+        text-align: left;
+
+        font-size: 24px;
+
+        margin-bottom: 20px;
+
+    }
+
+
+
+    .search-bar {
+
+        margin-bottom: 20px;
+
+        display: flex;
+
+        gap: 10px;
+
+    }
+
+
+
+    .search-bar input {
+
+        flex: 1;
+
+        padding: 10px;
+
+        border-radius: 5px;
+
+        border: none;
+
+    }
+
+
+
+    .search-bar button {
+
+        padding: 10px 15px;
+
+        background-color: #1db954;
+
+        border: none;
+
+        border-radius: 5px;
+
+        color: white;
+
+        cursor: pointer;
+
+    }
+
+
+
+    .category {
+
+        margin-top: 30px;
+
+    }
+
+
+
+    .category h2 {
+
+        font-size: 20px;
+
+        margin-bottom: 15px;
+
+    }
+
+
+
+    .video-list-container {
+
+        overflow-x: auto;
+
+        white-space: nowrap;
+
+        scrollbar-width: none;
+
+        -ms-overflow-style: none;
+
+    }
+
+
+
+    .video-list-container::-webkit-scrollbar {
+
+        display: none;
+
+    }
+
+
+
+    .video-list {
+
+        display: flex;
+
+        gap: 20px;
+
+        padding-bottom: 10px;
+
+    }
+
+
+
+    .video {
+
+        background: #1e1e1e;
+
+        padding: 15px;
+
+        border-radius: 10px;
+
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+
+        text-align: center;
+
+        flex: 0 0 auto;
+
+        width: 300px;
+
+    }
+
+
+
+    .video .title-wrapper {
+
+        height: 40px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+    }
+
+
+
+    .video h3 {
+
+        font-size: 16px;
+
+        margin-bottom: 10px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        max-width: 100%;
+
+    }
+
+
+
+    .video iframe {
+
+        width: 100%;
+
+        height: 180px;
+
+        border-radius: 8px;
+
+    }
+
+</style>
+
+</head><body><div class="container">
+
+    <h1>Top Trending Music Videos in India</h1>
+
+    <div class="search-bar">
+
+        <input type="text" id="search-query" placeholder="Search for music videos or playlists...">
+
+        <button onclick="searchYouTube()">Search</button>
+
     </div>
-    
-    <script>
-       
-        
-        document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem("darkMode") === "enabled") {
-                document.body.classList.add("dark-mode");
-            }
-        });
-        
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-            localStorage.setItem("darkMode", document.body.classList.contains("dark-mode") ? "enabled" : "disabled");
-        }
 
-        function playPlaylist() {
-            let url = document.getElementById("playlistUrl").value;
-            let playlistId = extractPlaylistID(url);
-            if (playlistId) {
-                let embedUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1&loop=1`;
-                document.getElementById("videoFrame").src = embedUrl;
-            } else {
-                alert("Please enter a valid YouTube Playlist URL");
-            }
-        }
+    <div id="search-results" class="category" style="display:none;">
 
-        function extractPlaylistID(url) {
-            let regex = /[?&]list=([^&#]+)/;
-            let match = url.match(regex);
-            return match ? match[1] : null;
-        }
+        <h2>Search Results</h2>
 
-        const apiKey = 'AIzaSyAXk5vcoD3Wjs3fgJUNjFE2hFJMQx7pvNg';
-        const clientId = '0ea372cc541b4e53948bd83c791f94f1';
-        const clientSecret = '5549889e09764f2185808bbf5a0e64b1';
+        <div class="video-list-container">
 
-        async function getSpotifyToken() {
-            const response = await fetch('https://accounts.spotify.com/api/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`
-            });
+            <div class="video-list"></div>
+
+        </div>
+
+    </div>
+
+    <div id="hindi-videos" class="category">
+
+        <h2>Trending Hindi Music</h2>
+
+        <div class="video-list-container">
+
+            <div class="video-list"></div>
+
+        </div>
+
+    </div>
+
+    <div id="english-videos" class="category">
+
+        <h2>Trending English Music</h2>
+
+        <div class="video-list-container">
+
+            <div class="video-list"></div>
+
+        </div>
+
+    </div>
+
+    <div id="punjabi-videos" class="category">
+
+        <h2>Trending Punjabi Music</h2>
+
+        <div class="video-list-container">
+
+            <div class="video-list"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    const API_KEY_PLAYLISTS = "AIzaSyAB5ZP3jnLtjz3IPRRrCe66yElwAJh8TsY";
+
+    const playlists = {
+
+        "hindi-videos": "PL4uUU2x5ZgR1JOlcY9SZB94MW6fBE8ovU",
+
+        "english-videos": "PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG",
+
+        "punjabi-videos": "PLFFyMei_d85U5RQdXjRQ5F012qr4vSmSa"
+
+    };
+
+
+
+    async function fetchPlaylistVideos(playlistId, containerId) {
+
+        const API_URL = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=10&key=${API_KEY_PLAYLISTS}`;
+
+        try {
+
+            const response = await fetch(API_URL);
+
             const data = await response.json();
-            return data.access_token;
-        }
-        
-        async function searchAll(newSearch = false) {
-            if (newSearch) {
-                document.getElementById('results').innerHTML = '';
-                query = document.getElementById('searchQuery').value.trim();
-            }
-            if (!query) return;
 
-            searchYouTube(query);
-            searchSpotify(query);
-        }
-        
-        async function searchSpotify(query) {
-            try {
-                const token = await getSpotifyToken();
-                const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
-                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!response.ok) throw new Error('Failed to fetch Spotify data');
-                const data = await response.json();
-                renderResults(data.tracks.items, 'spotify');
-            } catch (error) {
-                console.error('Spotify API Error:', error);
+            const videoList = document.querySelector(`#${containerId} .video-list`);
+
+            videoList.innerHTML = "";
+
+
+
+            if (!data.items) {
+
+                throw new Error(`No videos found for playlist ${playlistId}`);
+
             }
-        }
-        
-        function playSpotifyTrack(trackUrl, trackName) {
-            document.getElementById('audioPlayer').style.display = 'block';
-            document.getElementById('audioTitle').innerText = trackName;
-            document.getElementById('spotifyAudio').src = trackUrl;
-            document.getElementById('spotifyAudio').play();
-        }
-        
-        function renderResults(items, source) {
-            const resultsDiv = document.getElementById('results');
-            items.forEach(item => {
-                let element = document.createElement('div');
-                element.classList.add('video');
-                let title = item.name;
-                let thumbnail = item.album ? item.album.images[0].url : '';
-                let url = item.preview_url;
-                
-                element.innerHTML = `
-                    <h3>${title} (${source})</h3>
-                    <img src="${thumbnail}" width="100%" style="border-radius: 10px;" onclick="playSpotifyTrack('${url}', '${title}')">
+
+
+
+            data.items.forEach(video => {
+
+                const videoElement = document.createElement("div");
+
+                videoElement.classList.add("video");
+
+                videoElement.innerHTML = `
+
+                    <div class="title-wrapper">
+
+                        <h3>${video.snippet.title}</h3>
+
+                    </div>
+
+                    <iframe src="https://www.youtube.com/embed/${video.snippet.resourceId.videoId}" allowfullscreen></iframe>
+
                 `;
-                resultsDiv.appendChild(element);
+
+                videoList.appendChild(videoElement);
+
             });
+
+        } catch (error) {
+
+            console.error(`Error fetching ${containerId} videos:`, error);
+
         }
-    </script>
-</body>
-</html>
+
+    }
+
+
+
+    async function searchYouTube() {
+
+        const query = document.getElementById("search-query").value;
+
+        if (!query) return;
+
+        
+
+        const API_KEY_SEARCH = "AIzaSyAB5ZP3jnLtjz3IPRRrCe66yElwAJh8TsY";
+
+        const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video,playlist&maxResults=10&key=${API_KEY_SEARCH}`;
+
+        try {
+
+            const response = await fetch(API_URL);
+
+            const data = await response.json();
+
+            const videoList = document.querySelector(`#search-results .video-list`);
+
+            videoList.innerHTML = "";
+
+            document.getElementById("search-results").style.display = "block";
+
+            
+
+            data.items.forEach(video => {
+
+                const videoElement = document.createElement("div");
+
+                videoElement.classList.add("video");
+
+                videoElement.innerHTML = `
+
+                    <div class="title-wrapper">
+
+                        <h3>${video.snippet.title}</h3>
+
+                    </div>
+
+                    <iframe src="https://www.youtube.com/embed/${video.id.videoId}" allowfullscreen></iframe>
+
+                `;
+
+                videoList.appendChild(videoElement);
+
+            });
+
+        } catch (error) {
+
+            console.error("Error fetching search results:", error);
+
+        }
+
+    }
+
+
+
+    Object.keys(playlists).forEach(containerId => {
+
+        fetchPlaylistVideos(playlists[containerId], containerId);
+
+    });
+
+</script>
+
+</body></html>
