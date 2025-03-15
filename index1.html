@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orpheus</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: left;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #1db954;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .category {
+            margin-top: 30px;
+        }
+
+        .category h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .video-list {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .video {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            flex: 0 0 auto;
+            width: 300px;
+            cursor: pointer;
+        }
+
+        .video img {
+            width: 100%;
+            height: 180px;
+            border-radius: 8px;
+        }
+
+        /* Floating Draggable Video Player */
+        #floating-player {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: #000;
+            border-radius: 10px;
+            display: none;
+            cursor: grab;
+            z-index: 1000;
+        }
+
+        #floating-video {
+            width: 100%;
+            height: 180px;
+            border-radius: 10px;
+        }
+
+        #google-auth {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Orpheus</h1>
+
+    <div id="google-auth">
+        <div id="g_id_onload"
+             data-client_id="974526141789-36ppt1gp0btne6jl41kncuicunc6ssi8.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-scope="https://www.googleapis.com/auth/youtube.readonly"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search-query" placeholder="Enter YouTube video, playlist link, or search term...">
+        <button onclick="handleSearch()">Search</button>
+    </div>
+
+    <div id="search-results" class="category" style="display:none;">
+        <h2>Search Results</h2>
+        <div class="video-list"></div>
+    </div>
+
+    <div id="trending"></div>
+    
+    <div id="yt-mixes" class="category">
+        <h2>YouTube Mixes</h2>
+        <div class="video-list"></div>
+    </div>
+
+    <div id="recommended-videos" class="category" style="display:none;">
+        <h2>Recommended for You</h2>
+        <div class="video-list"></div>
+    </div>
+</div>
+
+<!-- Floating Draggable Video Player -->
+<div id="floating-player">
+    <iframe id="floating-video" allowfullscreen></iframe>
+</div>
+
+<script>
+    let userToken = null;
+    
+    function handleCredentialResponse(response) {
+        console.log("User authenticated: ", response);
+        alert("Google Sign-In successful!");
+        userToken = response.credential;
+        fetchRecommendedVideos();
+    }
+
+    function fetchRecommendedVideos() {
+        if (!userToken) return;
+        
+        const API_URL = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&regionCode=US&key=YOUR_YOUTUBE_API_KEY`;
+        fetch(API_URL, {
+            headers: { Authorization: `Bearer ${userToken}` }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const recommendedContainer = document.querySelector("#recommended-videos .video-list");
+            recommendedContainer.innerHTML = "";
+            document.getElementById("recommended-videos").style.display = "block";
+            
+            data.items.forEach(video => {
+                const videoId = video.id;
+                const videoElement = document.createElement("div");
+                videoElement.classList.add("video");
+                videoElement.innerHTML = `
+                    <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}" />
+                    <h3>${video.snippet.title}</h3>
+                `;
+                videoElement.onclick = () => openFloatingPlayer(videoId);
+                recommendedContainer.appendChild(videoElement);
+            });
+        })
+        .catch(error => console.error("Error fetching recommended videos:", error));
+    }
+</script>
+
+</body>
+</html>
