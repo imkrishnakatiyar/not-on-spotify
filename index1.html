@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orpheus</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: left;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #1db954;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .category {
+            margin-top: 30px;
+        }
+
+        .category h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .video-list {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .video {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            flex: 0 0 auto;
+            width: 300px;
+            cursor: pointer;
+        }
+
+        .video iframe {
+            width: 100%;
+            height: 180px;
+            border-radius: 8px;
+        }
+
+        /* Floating Video Player */
+        #floating-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: #000;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+            cursor: grab;
+        }
+
+        #player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            cursor: grab;
+        }
+
+        #close-btn {
+            cursor: pointer;
+            color: red;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Orpheus</h1>
+
+    <div class="search-bar">
+        <input type="text" id="search-query" placeholder="Search for music videos...">
+        <button onclick="searchYouTube()">Search</button>
+    </div>
+
+    <div id="search-results" class="category" style="display:none;">
+        <h2>Search Results</h2>
+        <div class="video-list"></div>
+    </div>
+
+    <div id="hindi-videos" class="category">
+        <h2>Trending Hindi Music</h2>
+        <div class="video-list"></div>
+    </div>
+
+    <div id="english-videos" class="category">
+        <h2>Trending English Music</h2>
+        <div class="video-list"></div>
+    </div>
+
+    <div id="punjabi-videos" class="category">
+        <h2>Trending Punjabi Music</h2>
+        <div class="video-list"></div>
+    </div>
+</div>
+
+<!-- Floating Video Player -->
+<div id="floating-player">
+    <div id="player-header">
+        <span>Now Playing</span>
+        <span id="close-btn">✖</span>
+    </div>
+    <iframe id="floating-video" allowfullscreen></iframe>
+</div>
+
+<script>
+    const API_KEY = "YOUR_YOUTUBE_API_KEY";
+    
+    const playlists = {
+        "hindi-videos": "PL4uUU2x5ZgR1JOlcY9SZB94MW6fBE8ovU",
+        "english-videos": "PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG",
+        "punjabi-videos": "PLFFyMei_d85U5RQdXjRQ5F012qr4vSmSa"
+    };
+
+    function fetchPlaylistVideos(playlistId, containerId) {
+        const API_URL = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=10&key=${API_KEY}`;
+        
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                const videoList = document.querySelector(`#${containerId} .video-list`);
+                videoList.innerHTML = "";
+                data.items.forEach(video => {
+                    const videoId = video.snippet.resourceId.videoId;
+                    const videoElement = document.createElement("div");
+                    videoElement.classList.add("video");
+                    videoElement.innerHTML = `
+                        <h3>${video.snippet.title}</h3>
+                        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+                    `;
+                    videoElement.onclick = () => openFloatingPlayer(videoId);
+                    videoList.appendChild(videoElement);
+                });
+            })
+            .catch(error => console.error(`Error fetching videos:`, error));
+    }
+
+    function searchYouTube() {
+        const query = document.getElementById("search-query").value;
+        if (!query) return;
+
+        const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=10&key=${API_KEY}`;
+        
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                const videoList = document.querySelector("#search-results .video-list");
+                videoList.innerHTML = "";
+                document.getElementById("search-results").style.display = "block";
+
+                data.items.forEach(video => {
+                    const videoId = video.id.videoId;
+                    const videoElement = document.createElement("div");
+                    videoElement.classList.add("video");
+                    videoElement.innerHTML = `
+                        <h3>${video.snippet.title}</h3>
+                        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+                    `;
+                    videoElement.onclick = () => openFloatingPlayer(videoId);
+                    videoList.appendChild(videoElement);
+                });
+            })
+            .catch(error => console.error("Error fetching search results:", error));
+    }
+
+    function openFloatingPlayer(videoId) {
+        document.getElementById("floating-video").src = `https://www.youtube.com/embed/${videoId}`;
+        document.getElementById("floating-player").style.display = "block";
+    }
+
+    document.getElementById("close-btn").onclick = () => {
+        document.getElementById("floating-player").style.display = "none";
+        document.getElementById("floating-video").src = "";
+    };
+
+    Object.keys(playlists).forEach(containerId => {
+        fetchPlaylistVideos(playlists[containerId], containerId);
+    });
+</script>
+
+</body>
+</html>
