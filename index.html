@@ -82,7 +82,7 @@
       width: 100%;
       padding: 12px 16px;
       border-radius: 500px;
-      border: no ne;
+      border: none;
       background: rgba(255, 255, 255, 0.1);
       color: var(--text);
       font-size: 14px;
@@ -329,23 +329,6 @@
       margin: 16px 0;
     }
     
-    /* Loading spinner */
-    .spinner {
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top: 2px solid var(--brand);
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-left: 10px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
     /* Hidden YouTube player */
     #yt-frame {
       position: absolute;
@@ -494,8 +477,6 @@
     let updateInterval;
     let searchResults = [];
     let currentTrackIndex = -1;
-    let currentVideoIndex = 0;
-    let youtubeSearchResults = [];
     
     // Initialize YouTube Player
     function initYouTubePlayer() {
@@ -510,8 +491,7 @@
       player = new YT.Player('yt-frame', {
         events: {
           'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
-          'onError': onPlayerError
+          'onStateChange': onPlayerStateChange
         }
       });
     }
@@ -550,22 +530,6 @@
       }
     }
     
-    function onPlayerError(event) {
-      console.error('YouTube player error:', event.data);
-      
-      // Try the next video in the search results
-      currentVideoIndex++;
-      if (currentVideoIndex < youtubeSearchResults.length) {
-        statusBox.textContent = `Video unavailable, trying next result... <span class="spinner"></span>`;
-        setTimeout(() => loadYouTubeVideo(youtubeSearchResults[currentVideoIndex].id.videoId), 1000);
-      } else {
-        // No more videos to try
-        statusBox.textContent = 'No playable videos found for this track.';
-        isPlaying = false;
-        updatePlayButton();
-      }
-    }
-    
     // Search music when typing
     let searchTimeout;
     queryInput.addEventListener('input', (e) => {
@@ -577,7 +541,7 @@
         return;
       }
       
-      statusBox.textContent = 'Searching... <span class="spinner"></span>';
+      statusBox.textContent = 'Searching...';
       searchTimeout = setTimeout(() => searchMusic(q), 500);
     });
     
@@ -676,66 +640,47 @@
       playerImg.src = currentTrack.imgUrl;
       playerEl.style.display = 'grid';
       
-      // Reset video index for new track
-      currentVideoIndex = 0;
-      youtubeSearchResults = [];
-      
       try {
         const q = `${currentTrack.title} ${currentTrack.artist}`.trim();
-        statusBox.textContent = `Searching YouTube for: ${q}... <span class="spinner"></span>`;
+        const videoId = await searchYouTubeVideo(q);
         
-        // Search for multiple YouTube videos (get top 5 results)
-        youtubeSearchResults = await searchYouTubeVideos(q, 5);
-        
-        if (youtubeSearchResults.length === 0) {
-          statusBox.textContent = 'No YouTube videos found for this track.';
+        if (!videoId) {
+          alert('No YouTube video found for this track');
           return;
         }
         
-        statusBox.textContent = `Found ${youtubeSearchResults.length} videos. Playing...`;
-        
-        // Load the first video
-        loadYouTubeVideo(youtubeSearchResults[0].id.videoId);
+        if (player && typeof player.loadVideoById === 'function') {
+          player.loadVideoById(videoId);
+          player.playVideo();
+        } else {
+          // Fallback if player isn't ready yet
+          document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+        }
         
       } catch (err) {
         console.error('Error playing track:', err);
-        statusBox.textContent = 'Failed to load video. Please try again.';
+        alert('Failed to load video');
       }
     }
     
-    // Search YouTube for multiple videos
-    async function searchYouTubeVideos(q, maxResults = 5) {
+    // Search YouTube for video
+    async function searchYouTubeVideo(q) {
       if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.includes('YOUR_')) {
         alert('Please set your YouTube API key');
-        return [];
+        return null;
       }
       
       const endpoint = new URL('https://www.googleapis.com/youtube/v3/search');
       endpoint.searchParams.set('part', 'snippet');
       endpoint.searchParams.set('type', 'video');
-      endpoint.searchParams.set('maxResults', maxResults.toString());
+      endpoint.searchParams.set('maxResults', '1');
       endpoint.searchParams.set('q', q);
       endpoint.searchParams.set('key', YOUTUBE_API_KEY);
       
       const res = await fetch(endpoint.toString());
       const data = await res.json();
       
-      return data.items || [];
-    }
-    
-    // Load YouTube video
-    function loadYouTubeVideo(videoId) {
-      if (!videoId) return;
-      
-      statusBox.textContent = `Loading video ${currentVideoIndex + 1}/${youtubeSearchResults.length}...`;
-      
-      if (player && typeof player.loadVideoById === 'function') {
-        player.loadVideoById(videoId);
-        player.playVideo();
-      } else {
-        // Fallback if player isn't ready yet
-        document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-      }
+      return data.items?.[0]?.id?.videoId || null;
     }
     
     // Player controls
