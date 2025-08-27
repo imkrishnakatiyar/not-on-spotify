@@ -518,6 +518,23 @@ body {
     let tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
+    let searchTimeout;
+
+// Add this listener instead of relying only on the button
+document.getElementById('query').addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const q = e.target.value.trim();
+  if (!q) {
+    document.getElementById('status').textContent = "Search for your favorite music 🎧";
+    document.getElementById('results').innerHTML = "";
+    return;
+  }
+  // wait 500ms after typing stops
+  searchTimeout = setTimeout(() => {
+    search(q);
+  }, 500);
+});
+
   </script>
 </body>
 </html>
