@@ -135,9 +135,15 @@
       background: #181818;
       color: white;
       display: flex;
+      flex-direction: column;
+      padding: 1rem;
+    }
+    #player-top {
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
+      width: 100%;
+      margin-bottom: 0.5rem;
     }
     #player-info {
       display: flex;
@@ -158,9 +164,34 @@
       margin: 0 0.5rem;
       cursor: pointer;
     }
-    .playlist-name {
-      margin-top: 1rem;
-      font-weight: bold;
+    #progress-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    #progress {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 4px;
+      background: #444;
+      cursor: pointer;
+    }
+    #progress::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #1db954;
+      cursor: pointer;
+    }
+    #time-current, #time-total {
+      font-size: 0.8rem;
+      min-width: 40px;
+      text-align: center;
     }
   </style>
 </head>
@@ -184,17 +215,24 @@
     </main>
   </div>
   <footer>
-    <div id="player-info">
-      <img id="player-cover" src="https://via.placeholder.com/50" alt="">
-      <div>
-        <div id="player-title">No track</div>
-        <div id="player-artist">---</div>
+    <div id="player-top">
+      <div id="player-info">
+        <img id="player-cover" src="https://via.placeholder.com/50" alt="">
+        <div>
+          <div id="player-title">No track</div>
+          <div id="player-artist">---</div>
+        </div>
+      </div>
+      <div id="player-controls">
+        <button onclick="prevTrack()">⏮️</button>
+        <button id="play-btn" onclick="togglePlay()">▶️</button>
+        <button onclick="nextTrack()">⏭️</button>
       </div>
     </div>
-    <div id="player-controls">
-      <button onclick="prevTrack()">⏮️</button>
-      <button id="play-btn" onclick="togglePlay()">▶️</button>
-      <button onclick="nextTrack()">⏭️</button>
+    <div id="progress-container">
+      <span id="time-current">0:00</span>
+      <input type="range" id="progress" value="0" min="0" max="100">
+      <span id="time-total">0:00</span>
     </div>
     <div id="yt-player"></div>
   </footer>
@@ -213,6 +251,7 @@
     let currentIndex = -1;
     let player;
     let isPlaying = false;
+    let progressTimer;
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(musicifyData));
@@ -222,6 +261,9 @@
     const statusBox = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const sectionTitle = document.getElementById('section-title');
+    const progressEl = document.getElementById('progress');
+    const timeCurrent = document.getElementById('time-current');
+    const timeTotal = document.getElementById('time-total');
 
     queryInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') search(queryInput.value);
@@ -366,15 +408,21 @@
             videoId: videoId,
             playerVars: { 'autoplay': 1 },
             events: {
-              'onReady': () => { isPlaying = true; },
+              'onReady': () => { 
+                isPlaying = true; 
+                startProgressUpdater();
+              },
               'onStateChange': (e) => {
                 if (e.data === YT.PlayerState.ENDED) nextTrack();
+                if (e.data === YT.PlayerState.PLAYING) startProgressUpdater();
+                if (e.data === YT.PlayerState.PAUSED) stopProgressUpdater();
               }
             }
           });
         } else {
           player.loadVideoById(videoId);
           isPlaying = true;
+          startProgressUpdater();
         }
         document.getElementById('play-btn').textContent = '⏸️';
       }
@@ -408,6 +456,39 @@
     function placeholder() { 
       return "https://via.placeholder.com/250x250?text=No+Cover"; 
     }
+
+    function formatTime(sec) {
+      sec = Math.floor(sec);
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toString().padStart(2,'0')}`;
+    }
+
+    function startProgressUpdater() {
+      stopProgressUpdater();
+      progressTimer = setInterval(() => {
+        if (player && player.getDuration) {
+          const dur = player.getDuration();
+          const cur = player.getCurrentTime();
+          if (dur > 0) {
+            progressEl.max = dur;
+            progressEl.value = cur;
+            timeCurrent.textContent = formatTime(cur);
+            timeTotal.textContent = formatTime(dur);
+          }
+        }
+      }, 500);
+    }
+
+    function stopProgressUpdater() {
+      if (progressTimer) clearInterval(progressTimer);
+    }
+
+    progressEl.addEventListener('input', () => {
+      if (player && player.seekTo) {
+        player.seekTo(progressEl.value, true);
+      }
+    });
 
     // Load YouTube IFrame API
     let tag = document.createElement('script');
