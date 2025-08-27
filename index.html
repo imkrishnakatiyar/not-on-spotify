@@ -4,220 +4,237 @@
   <meta charset="UTF-8">
   <title>Musicify 🎵</title>
   <style>
+:root {
+  --bg: #121212;
+  --bg-light: #181818;
+  --bg-lighter: #282828;
+  --text: #fff;
+  --text-muted: #b3b3b3;
+  --brand: #1db954;
+}
+
 body {
-      margin: 0;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background: #121212;
-      color: #fff;
-    }
-    header {
-      display: none; /* Hide old header, Spotify doesn’t use it */
-    }
-    #container {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      height: 100vh;
-    }
-    /* Sidebar */
-    nav {
-      background: #000;
-      color: #b3b3b3;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      font-size: 0.95rem;
-    }
-    nav button {
-      background: none;
-      border: none;
-      color: #b3b3b3;
-      text-align: left;
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 0.5rem 0.8rem;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: color 0.2s, background 0.2s;
-    }
-    nav button:hover {
-      color: #fff;
-      background: #282828;
-    }
-    main {
-      padding: 1.5rem;
-      overflow-y: auto;
-    }
-    #searchbar {
-      display: flex;
-      margin-bottom: 1.5rem;
-    }
-    #query {
-      flex: 1;
-      padding: 0.7rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 30px 0 0 30px;
-      outline: none;
-      background: #282828;
-      color: #fff;
-    }
-    #searchbtn {
-      padding: 0.7rem 1.5rem;
-      border: none;
-      background: #1db954;
-      color: white;
-      border-radius: 0 30px 30px 0;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-    #status {
-      margin-bottom: 1rem;
-      color: #aaa;
-    }
-    #results {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1.5rem;
-    }
-    .card {
-      background: #181818;
-      border-radius: 10px;
-      padding: 1rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-    }
-    .card:hover {
-      background: #282828;
-      transform: scale(1.03);
-    }
-    .card-img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    .card-title {
-      font-weight: bold;
-      font-size: 1rem;
-      color: #fff;
-      margin-bottom: 0.3rem;
-    }
-    .card-subtitle {
-      font-size: 0.9rem;
-      color: #b3b3b3;
-    }
-    .card-actions {
-      margin-top: 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-    .fav-btn, .playlist-btn {
-      flex: 1;
-      border: none;
-      border-radius: 20px;
-      padding: 0.4rem;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-    .fav-btn {
-      background: #333;
-      color: #fff;
-    }
-    .fav-btn.active {
-      background: #1db954;
-      color: #fff;
-    }
-    .playlist-btn {
-      background: #1db954;
-      color: white;
-    }
-    /* Footer Player */
-    footer {
-      background: #181818;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 0.5rem 1rem;
-      position: sticky;
-      bottom: 0;
-      width: 100%;
-      border-top: 1px solid #282828;
-    }
-    #player-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin-bottom: 0.5rem;
-    }
-    #player-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    #player-cover {
-      width: 56px;
-      height: 56px;
-      object-fit: cover;
-      border-radius: 6px;
-    }
-    #player-controls {
-      display: flex;
-      align-items: center;
-    }
-    #player-controls button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      margin: 0 0.5rem;
-      cursor: pointer;
-    }
-    #play-btn {
-      background: #1db954;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-    }
-    #progress-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      width: 100%;
-    }
-    #progress {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      border-radius: 4px;
-      background: #535353;
-      cursor: pointer;
-    }
-    #progress::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #1db954;
-      cursor: pointer;
-    }
-    #time-current, #time-total {
-      font-size: 0.8rem;
-      min-width: 40px;
-      text-align: center;
-      color: #b3b3b3;
-    }
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(180deg, #121212 0%, #181818 100%);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 230px;
+  background: var(--bg-light);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-right: 1px solid #282828;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: var(--brand);
+}
+
+.nav-item {
+  margin: 10px 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+  text-decoration: none;
+  font-size: 15px;
+}
+.nav-item:hover {
+  color: var(--text);
+  transform: translateX(5px);
+}
+
+/* Main */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #181818, #121212);
+}
+
+.searchbar {
+  padding: 20px;
+  background: rgba(24, 24, 24, 0.9);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: var(--bg-lighter);
+  color: var(--text);
+  transition: box-shadow 0.3s;
+}
+.search-input:focus {
+  box-shadow: 0 0 8px var(--brand);
+}
+
+.status {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px;
+}
+
+/* Cards */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  padding: 0 20px 120px 20px;
+}
+
+.card {
+  background: var(--bg-light);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 10px rgba(29,185,84,0.4);
+}
+
+.card-img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.card-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.fav-btn, .playlist-btn {
+  background: var(--bg-lighter);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  transition: background 0.2s, color 0.2s;
+}
+.fav-btn.active {
+  color: var(--brand);
+}
+.fav-btn:hover, .playlist-btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* Playlist name */
+h3.playlist-name {
+  margin: 20px;
+  font-size: 18px;
+  color: var(--brand);
+}
+
+/* Player */
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 230px;
+  right: 0;
+  height: 100px;
+  background: rgba(40, 40, 40, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-top: 1px solid #333;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.player-info img {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.player-controls button {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.2s;
+}
+.player-controls button:hover {
+  transform: scale(1.2);
+  color: var(--brand);
+}
+
+/* Progress bar */
+.progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 230px;
+  right: 0;
+  height: 6px;
+  background: #333;
+  cursor: pointer;
+}
+.progress {
+  height: 100%;
+  width: 0%;
+  background: var(--brand);
+  transition: width 0.2s linear;
+}
+
   </style>
 </head>
 <body>
