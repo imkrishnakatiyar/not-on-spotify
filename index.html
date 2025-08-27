@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Musicify</title>
   <style>
-    /* Spotify Ambient Theme */
     :root {
       --bg: #121212;
       --bg-light: #181818;
@@ -237,50 +236,47 @@
     }
   </style>
 </head>
-
 <body>
-    <div id="container">
-    <nav>
-      <button onclick="showHome()">🏠 Home</button>
-      <button onclick="showFavorites()">❤️ Favorites</button>
-      <button onclick="showHistory()">⏱️ History</button>
-      <button onclick="showPlaylists()">🎶 Playlists</button>
-    </nav>
-    <main>
-      <div id="searchbar">
-        <input id="query" placeholder="What do you want to listen to?">
-        <button id="searchbtn" onclick="search(query.value)">Search</button>
-      </div>
-      <div id="status">Search for your favorite music 🎧</div>
-      <h2 id="section-title">Search Results</h2>
-      <div id="results"></div>
-    </main>
+  <div class="sidebar">
+    <div class="logo">Musicify</div>
+    <div class="nav-item" onclick="showSection('history')">History</div>
+    <div class="nav-item" onclick="showSection('favourites')">Favourites</div>
+    <div class="nav-item" onclick="showSection('playlists')">Playlists</div>
   </div>
-  <footer>
-    <div id="player-top">
-      <div id="player-info">
-        <img id="player-cover" src="https://via.placeholder.com/50" alt="">
-        <div>
-          <div id="player-title">No track</div>
-          <div id="player-artist">---</div>
-        </div>
-      </div>
-      <div id="player-controls">
-        <button onclick="prevTrack()">⏮️</button>
-        <button id="play-btn" onclick="togglePlay()">▶️</button>
-        <button onclick="nextTrack()">⏭️</button>
+
+  <div class="main">
+    <div class="searchbar">
+      <input class="search-input" type="text" id="searchInput" placeholder="Search for songs...">
+    </div>
+    <div class="status" id="status">Type to search</div>
+    <div id="results" class="results-grid"></div>
+    <div id="historySection" style="display:none;"></div>
+    <div id="favouritesSection" style="display:none;"></div>
+    <div id="playlistsSection" style="display:none;"></div>
+  </div>
+
+  <div class="player">
+    <div class="player-info" id="playerInfo">
+      <img id="playerThumbnail" src="" alt="">
+      <div>
+        <div id="playerTitle">Not Playing</div>
+        <div id="playerChannel"></div>
       </div>
     </div>
-    <div id="progress-container">
-      <span id="time-current">0:00</span>
-      <input type="range" id="progress" value="0" min="0" max="100">
-      <span id="time-total">0:00</span>
+    <div class="player-controls">
+      <button onclick="prevTrack()">⏮️</button>
+      <button onclick="togglePlay()">▶️/⏸️</button>
+      <button onclick="nextTrack()">⏭️</button>
     </div>
-    <div id="yt-player"></div>
-  </footer>
+  </div>
+  <div class="progress-container" onclick="seek(event)">
+    <div class="progress" id="progressBar"></div>
+  </div>
+
+  <div id="player"></div>
 
   <script>
-    const YOUTUBE_API_KEY = "AIzaSyBcGIEyPh4g7TN2gV4CN_KAcO4SpjGJCFA"; // replace with your YouTube API key
+     const YOUTUBE_API_KEY = "AIzaSyBcGIEyPh4g7TN2gV4CN_KAcO4SpjGJCFA"; // replace with your YouTube API key
     const STORAGE_KEY = "musicifyData";
     let musicifyData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
       history: [],
@@ -536,22 +532,6 @@
     let tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
-    let searchTimeout;
-
-// Add this listener instead of relying only on the button
-document.getElementById('query').addEventListener('input', (e) => {
-  clearTimeout(searchTimeout);
-  const q = e.target.value.trim();
-  if (!q) {
-    document.getElementById('status').textContent = "Search for your favorite music 🎧";
-    document.getElementById('results').innerHTML = "";
-    return;
-  }
-  // wait 500ms after typing stops
-  searchTimeout = setTimeout(() => {
-    search(q);
-  }, 500);
-});
 
   </script>
 </body>
