@@ -5,118 +5,372 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎵 Music Search + Play</title>
   <style>
-    /* === MAIN CSS === */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #121212;
-  color: #fff;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Make app take full height and center search */
-#app {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-/* Centered search container */
-#search-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 30px;
-}
-
-/* Search input styled like ChatGPT */
-#query {
-  width: 100%;
-  padding: 15px 20px;
-  font-size: 18px;
-  border: none;
-  border-radius: 12px;
-  outline: none;
-  background: #1e1e1e;
-  color: #fff;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-}
-
-/* Status (Searching... or error text) */
-#status {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #aaa;
-  text-align: center;
-}
-
-/* Results grid (below search bar) */
-#results {
-  width: 100%;
-  max-width: 1000px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  justify-content: center;
-}
-
-/* Result card */
-.card {
-  position: relative;
-  background: #1e1e1e;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.card:hover {
-  transform: scale(1.05);
-}
-.card-img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-.card-title {
-  font-size: 14px;
-  font-weight: bold;
-  padding: 8px;
-}
-.card-subtitle {
-  font-size: 12px;
-  color: #aaa;
-  padding: 0 8px 8px;
-}
-.card-play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.6);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.card:hover .card-play {
-  opacity: 1;
-}
+    :root {
+      --bg: #121212;
+      --card-bg: #181818;
+      --card-hover: #282828;
+      --text: #ffffff;
+      --text-muted: #b3b3b3;
+      --brand: #1db954;
+      --brand-hover: #1ed760;
+      --sidebar: #000000;
+      --player-bg: #181818;
+      --progress-bar: #535353;
+      --progress-active: #b3b3b3;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Circular', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: 1fr auto;
+      grid-template-areas: 
+        "sidebar main"
+        "player player";
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--sidebar);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .nav-item {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      transition: color 0.2s ease;
+    }
+    
+    .nav-item:hover {
+      color: var(--text);
+    }
+    
+    /* Main Content */
+    .main {
+      grid-area: main;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    .searchbar {
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 500px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .section-title {
+      font-size: 24px;
+      margin: 24px 0 16px;
+    }
+    
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 24px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 16px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .card:hover {
+      background: var(--card-hover);
+    }
+    
+    .card-play {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      background: var(--brand);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.3s ease;
+      transform: translateY(8px);
+      box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card:hover .card-play {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .card-play:hover {
+      background: var(--brand-hover);
+      transform: scale(1.05);
+    }
+    
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .card-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    /* Player */
+    .player {
+      grid-area: player;
+      background: var(--player-bg);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .player-track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 180px;
+    }
+    
+    .player-track-img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+    }
+    
+    .player-track-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .player-track-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .player-track-artist {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .player-buttons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .player-button {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .player-button:hover {
+      color: var(--brand);
+    }
+    
+    .player-button.active {
+      color: var(--brand);
+    }
+    
+    .player-button-play {
+      background: var(--text);
+      color: #000;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .player-button-play:hover {
+      transform: scale(1.05);
+      background: var(--brand);
+    }
+    
+    .player-progress {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .player-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 40px;
+    }
+    
+    .player-bar {
+      flex-grow: 1;
+      height: 4px;
+      background: var(--progress-bar);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .player-progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: var(--progress-active);
+      border-radius: 2px;
+      width: 0%;
+    }
+    
+    .player-progress-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--text);
+      border-radius: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    
+    .player-bar:hover .player-progress-handle {
+      opacity: 1;
+    }
+    
+    .player-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    /* Status */
+    .status {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 16px 0;
+    }
+    
+    /* Hidden YouTube player */
+    #yt-frame {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+          "main"
+          "player";
+      }
+      
+      .sidebar {
+        display: none;
+      }
+      
+      .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+      
+      .player {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .player-track {
+        justify-content: center;
+      }
+      
+      .player-actions {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-   <div class="sidebar">
+  <div class="sidebar">
     <div class="logo">Musicify</div>
     <a href="#" class="nav-item">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"></path></svg>
@@ -189,6 +443,7 @@ body {
 
   <!-- Hidden YouTube player -->
   <iframe id="yt-frame" title="YouTube player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: none;"></iframe>
+
   <script>
     // Replace with your YouTube API key
     const YOUTUBE_API_KEY = "AIzaSyBcGIEyPh4g7TN2gV4CN_KAcO4SpjGJCFA";
@@ -231,6 +486,7 @@ body {
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
     
+    // Called when YouTube API is ready
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('yt-frame', {
         events: {
@@ -241,6 +497,8 @@ body {
     }
     
     function onPlayerReady(event) {
+      console.log('YouTube player is ready');
+      // Enable player controls now that player is ready
       document.querySelectorAll('.player-button').forEach(btn => {
         btn.disabled = false;
       });
@@ -272,7 +530,7 @@ body {
       }
     }
     
-    // Search input
+    // Search music when typing
     let searchTimeout;
     queryInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -282,23 +540,27 @@ body {
         statusBox.textContent = '';
         return;
       }
+      
       statusBox.textContent = 'Searching...';
       searchTimeout = setTimeout(() => searchMusic(q), 500);
     });
     
+    // Search MusicBrainz API
     async function searchMusic(q) {
       try {
-        const url = `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=12&inc=releases+artist-credits`;
+        const url = https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=12&inc=releases+artist-credits;
         const res = await fetch(url, { 
           headers: { 'User-Agent': 'music-search-spotify/1.0 (example@example.com)' } 
         });
         const data = await res.json();
         searchResults = Array.isArray(data.recordings) ? data.recordings : [];
+        
         if (searchResults.length === 0) {
           statusBox.textContent = 'No results found. Try a different search.';
           resultsEl.innerHTML = '';
           return;
         }
+        
         statusBox.textContent = '';
         renderResults(searchResults);
       } catch (err) {
@@ -307,28 +569,35 @@ body {
       }
     }
     
+    // Render search results
     function renderResults(items) {
       resultsEl.innerHTML = '';
       items.forEach((rec, index) => {
         const card = document.createElement('div');
         card.className = 'card';
+        
         const img = document.createElement('img');
         img.className = 'card-img';
         const releaseId = rec.releases?.[0]?.id;
         if (releaseId) {
-          img.src = `https://coverartarchive.org/release/${releaseId}/front-250`;
+          img.src = https://coverartarchive.org/release/${releaseId}/front-250;
+          img.alt = ${rec.title} cover;
           img.onerror = () => { img.src = placeholder(); };
         } else {
           img.src = placeholder();
+          img.alt = 'No cover available';
         }
+        
         const title = document.createElement('div');
         title.className = 'card-title';
         title.textContent = rec.title || 'Untitled';
+        
         const subtitle = document.createElement('div');
         subtitle.className = 'card-subtitle';
         const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
         const releaseDate = rec['first-release-date'] || 'Unknown year';
-        subtitle.textContent = `${artists} • ${releaseDate}`;
+        subtitle.textContent = ${artists} • ${releaseDate};
+        
         const playBtn = document.createElement('div');
         playBtn.className = 'card-play';
         playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.018 14L14.41 8 4.018 2z"></path></svg>';
@@ -336,86 +605,131 @@ body {
           e.stopPropagation();
           playTrack(index);
         });
+        
         card.appendChild(img);
         card.appendChild(title);
         card.appendChild(subtitle);
         card.appendChild(playBtn);
+        
         card.addEventListener('click', () => playTrack(index));
+        
         resultsEl.appendChild(card);
       });
     }
     
+    // Play track by index
     async function playTrack(index) {
       if (!searchResults[index]) return;
+      
       const rec = searchResults[index];
       const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
       const imgUrl = rec.releases?.[0]?.id 
-        ? `https://coverartarchive.org/release/${rec.releases[0].id}/front-250` 
+        ? https://coverartarchive.org/release/${rec.releases[0].id}/front-250 
         : placeholder();
+      
       currentTrackIndex = index;
-      currentTrack = { title: rec.title || 'Untitled', artist: artists, imgUrl };
+      currentTrack = { 
+        title: rec.title || 'Untitled', 
+        artist: artists,
+        imgUrl 
+      };
+      
+      // Update player UI
       playerTitle.textContent = currentTrack.title;
       playerArtist.textContent = currentTrack.artist;
       playerImg.src = currentTrack.imgUrl;
       playerEl.style.display = 'grid';
+      
       try {
-        const q = `${currentTrack.title} ${currentTrack.artist}`.trim();
+        const q = ${currentTrack.title} ${currentTrack.artist}.trim();
         const videoId = await searchYouTubeVideo(q);
+        
         if (!videoId) {
           alert('No YouTube video found for this track');
           return;
         }
+        
         if (player && typeof player.loadVideoById === 'function') {
           player.loadVideoById(videoId);
           player.playVideo();
         } else {
-          document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+          // Fallback if player isn't ready yet
+          document.getElementById('yt-frame').src = https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1;
         }
+        
       } catch (err) {
         console.error('Error playing track:', err);
         alert('Failed to load video');
       }
     }
     
+    // Search YouTube for video
     async function searchYouTubeVideo(q) {
+      if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.includes('YOUR_')) {
+        alert('Please set your YouTube API key');
+        return null;
+      }
+      
       const endpoint = new URL('https://www.googleapis.com/youtube/v3/search');
       endpoint.searchParams.set('part', 'snippet');
       endpoint.searchParams.set('type', 'video');
       endpoint.searchParams.set('maxResults', '1');
       endpoint.searchParams.set('q', q);
       endpoint.searchParams.set('key', YOUTUBE_API_KEY);
+      
       const res = await fetch(endpoint.toString());
       const data = await res.json();
+      
       return data.items?.[0]?.id?.videoId || null;
     }
     
+    // Player controls
     function togglePlay() {
       if (!player) return;
-      if (isPlaying) player.pauseVideo();
-      else player.playVideo();
+      
+      if (isPlaying) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
     }
+    
     function playNextTrack() {
       if (searchResults.length === 0) return;
-      let nextIndex = isShuffled
-        ? Math.floor(Math.random() * searchResults.length)
-        : (currentTrackIndex + 1) % searchResults.length;
+      
+      let nextIndex;
+      if (isShuffled) {
+        nextIndex = Math.floor(Math.random() * searchResults.length);
+      } else {
+        nextIndex = (currentTrackIndex + 1) % searchResults.length;
+      }
+      
       playTrack(nextIndex);
     }
+    
     function playPrevTrack() {
       if (searchResults.length === 0) return;
-      let prevIndex = isShuffled
-        ? Math.floor(Math.random() * searchResults.length)
-        : (currentTrackIndex - 1 + searchResults.length) % searchResults.length;
+      
+      let prevIndex;
+      if (isShuffled) {
+        prevIndex = Math.floor(Math.random() * searchResults.length);
+      } else {
+        prevIndex = (currentTrackIndex - 1 + searchResults.length) % searchResults.length;
+      }
+      
       playTrack(prevIndex);
     }
+    
     function toggleShuffle() {
       isShuffled = !isShuffled;
       shuffleBtn.classList.toggle('active', isShuffled);
     }
+    
     function toggleRepeat() {
       isRepeated = !isRepeated;
       repeatBtn.classList.toggle('active', isRepeated);
     }
+    
     function updatePlayButton() {
       if (isPlaying) {
         playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 3h3v10H3zm7 0h3v10h-3z"></path></svg>';
@@ -423,33 +737,41 @@ body {
         playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.018 14L14.41 8 4.018 2z"></path></svg>';
       }
     }
+    
     function startProgressTimer() {
       clearInterval(updateInterval);
       updateProgress();
       updateInterval = setInterval(updateProgress, 1000);
     }
+    
     function updateProgress() {
       if (!player) return;
+      
       const currentTime = player.getCurrentTime();
       const duration = player.getDuration();
-      if (duration && currentTime != null) {
+      
+      if (duration && currentTime) {
         const progressPercent = (currentTime / duration) * 100;
-        progress.style.width = `${progressPercent}%`;
-        progressHandle.style.left = `${progressPercent}%`;
+        progress.style.width = ${progressPercent}%;
+        progressHandle.style.left = ${progressPercent}%;
+        
         currentTimeEl.textContent = formatTime(currentTime);
         durationEl.textContent = formatTime(duration);
       }
     }
+    
     function seekToPosition(e) {
       if (!player) return;
+      
       const rect = progressBar.getBoundingClientRect();
       const pos = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1);
       player.seekTo(player.getDuration() * pos);
     }
+    
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      return ${mins}:${secs < 10 ? '0' : ''}${secs};
     }
     
     // Event listeners
@@ -458,39 +780,26 @@ body {
     nextBtn.addEventListener('click', playNextTrack);
     shuffleBtn.addEventListener('click', toggleShuffle);
     repeatBtn.addEventListener('click', toggleRepeat);
+    
     progressBar.addEventListener('click', seekToPosition);
-
-    // ❌ deleted old progressBar mousemove preview here
-
-    // ✅ NEW draggable progress bar
-    let isDragging = false;
-    progressHandle.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      updateSeek(e);
-    });
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) updateSeek(e);
-    });
-    document.addEventListener('mouseup', (e) => {
-      if (isDragging) {
-        isDragging = false;
-        seekToPosition(e);
-      }
-    });
-    function updateSeek(e) {
+    progressBar.addEventListener('mousemove', (e) => {
+      if (!player) return;
       const rect = progressBar.getBoundingClientRect();
       const pos = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1);
-      progress.style.width = `${pos * 100}%`;
-      progressHandle.style.left = `${pos * 100}%`;
-      const previewTime = player.getDuration() * pos;
-      currentTimeEl.textContent = formatTime(previewTime);
-    }
-
+      progressHandle.style.left = ${pos * 100}%;
+    });
+    
     // Disable buttons until player is ready
-    document.querySelectorAll('.player-button').forEach(btn => btn.disabled = true);
+    document.querySelectorAll('.player-button').forEach(btn => {
+      btn.disabled = true;
+    });
+    
+    // Placeholder image
     function placeholder() {
       return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
     }
+    
+    // Initialize the app
     initYouTubePlayer();
   </script>
 </body>
