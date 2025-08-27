@@ -548,7 +548,7 @@
     // Search MusicBrainz API
     async function searchMusic(q) {
       try {
-        const url = https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=12&inc=releases+artist-credits;
+        const url = `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=12&inc=releases+artist-credits`;
         const res = await fetch(url, { 
           headers: { 'User-Agent': 'music-search-spotify/1.0 (example@example.com)' } 
         });
@@ -580,8 +580,8 @@
         img.className = 'card-img';
         const releaseId = rec.releases?.[0]?.id;
         if (releaseId) {
-          img.src = https://coverartarchive.org/release/${releaseId}/front-250;
-          img.alt = ${rec.title} cover;
+          img.src = `https://coverartarchive.org/release/${releaseId}/front-250`;
+          img.alt = `${rec.title} cover`;
           img.onerror = () => { img.src = placeholder(); };
         } else {
           img.src = placeholder();
@@ -596,7 +596,7 @@
         subtitle.className = 'card-subtitle';
         const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
         const releaseDate = rec['first-release-date'] || 'Unknown year';
-        subtitle.textContent = ${artists} • ${releaseDate};
+        subtitle.textContent = `${artists} • ${releaseDate}`;
         
         const playBtn = document.createElement('div');
         playBtn.className = 'card-play';
@@ -624,7 +624,7 @@
       const rec = searchResults[index];
       const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
       const imgUrl = rec.releases?.[0]?.id 
-        ? https://coverartarchive.org/release/${rec.releases[0].id}/front-250 
+        ? `https://coverartarchive.org/release/${rec.releases[0].id}/front-250` 
         : placeholder();
       
       currentTrackIndex = index;
@@ -641,7 +641,7 @@
       playerEl.style.display = 'grid';
       
       try {
-        const q = ${currentTrack.title} ${currentTrack.artist}.trim();
+        const q = `${currentTrack.title} ${currentTrack.artist}`.trim();
         const videoId = await searchYouTubeVideo(q);
         
         if (!videoId) {
@@ -654,7 +654,7 @@
           player.playVideo();
         } else {
           // Fallback if player isn't ready yet
-          document.getElementById('yt-frame').src = https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1;
+          document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
         }
         
       } catch (err) {
@@ -752,8 +752,8 @@
       
       if (duration && currentTime) {
         const progressPercent = (currentTime / duration) * 100;
-        progress.style.width = ${progressPercent}%;
-        progressHandle.style.left = ${progressPercent}%;
+        progress.style.width = `${progressPercent}%`;
+        progressHandle.style.left = `${progressPercent}%`;
         
         currentTimeEl.textContent = formatTime(currentTime);
         durationEl.textContent = formatTime(duration);
@@ -771,7 +771,7 @@
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
-      return ${mins}:${secs < 10 ? '0' : ''}${secs};
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
     
     // Event listeners
@@ -786,7 +786,7 @@
       if (!player) return;
       const rect = progressBar.getBoundingClientRect();
       const pos = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1);
-      progressHandle.style.left = ${pos * 100}%;
+      progressHandle.style.left = `${pos * 100}%`;
     });
     
     // Disable buttons until player is ready
