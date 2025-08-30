@@ -286,16 +286,19 @@ h3.playlist-name {
 
   /* Sidebar turns into top nav */
   .sidebar {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 10px;
-    border-right: none;
-    border-bottom: 1px solid #282828;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-  }
+  width: 100%;
+  display: flex;                /* make sure flex applies */
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 10px;
+  border-right: none;
+  border-bottom: 1px solid rgba(40, 40, 40, 0.6); /* softer, semi-transparent border */
+  background: transparent;      /* transparent background */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(6px);   /* optional: adds a frosted glass effect */
+}
 
   .logo {
     display: none; /* hide logo to save space */
