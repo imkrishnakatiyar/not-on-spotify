@@ -235,6 +235,108 @@ h3.playlist-name {
   background: var(--brand);
   transition: width 0.2s linear;
 }
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+    height: auto;
+  }
+
+  /* Sidebar turns into top nav */
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px;
+    border-right: none;
+    border-bottom: 1px solid #282828;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .logo {
+    display: none; /* hide logo to save space */
+  }
+
+  .nav-item {
+    font-size: 14px;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Main area takes full width */
+  .main {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Search bar compact */
+  .searchbar {
+    padding: 10px;
+  }
+  .search-input {
+    font-size: 14px;
+    padding: 10px;
+  }
+  #searchbtn {
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  /* Cards: 2 per row */
+  .results-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+  .card-title {
+    font-size: 14px;
+  }
+  .card-subtitle {
+    font-size: 12px;
+  }
+
+  /* Player adjustments */
+  .player {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .player-info img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .player-controls {
+    gap: 20px;
+  }
+  .player-controls button {
+    font-size: 28px;
+  }
+
+  /* Progress bar above controls */
+  .progress-container {
+    position: relative;
+    left: 0;
+    right: 0;
+    height: 4px;
+    margin: 0 10px;
+  }
+  #time-current, #time-total {
+    font-size: 12px;
+  }
+}
 
   </style>
 </head>
