@@ -242,6 +242,8 @@ h3.playlist-name {
   <div class="sidebar">
     <div class="logo">Musicify 🎵</div>
     <a class="nav-item" onclick="showHome()">🏠 Home</a>
+    <a class="nav-item" onclick="generatePlaylistFromHistory()">🎲 Generate Mix</a>
+
     <a class="nav-item" onclick="showFavorites()">❤️ Favorites</a>
     <a class="nav-item" onclick="showHistory()">⏱️ History</a>
     <a class="nav-item" onclick="showPlaylists()">🎶 Playlists</a>
@@ -557,6 +559,65 @@ document.getElementById('query').addEventListener('input', (e) => {
     search(q);
   }, 500);
 });
+async function generatePlaylistFromHistory() {
+  if (!musicifyData.history.length) {
+    alert("No history available to generate a playlist.");
+    return;
+  }
+
+  // Collect unique artists from history
+  const artistsSet = new Set();
+  musicifyData.history.forEach(track => {
+    const credits = track['artist-credit'] || [];
+    credits.forEach(c => artistsSet.add(c.name));
+  });
+  const artists = Array.from(artistsSet);
+
+  if (!artists.length) {
+    alert("Couldn’t find artists in history.");
+    return;
+  }
+
+  let playlist = [];
+
+  for (let artist of artists) {
+    try {
+      // Fetch random recordings for each artist
+      const resp = await fetch(
+        `https://musicbrainz.org/ws/2/recording?query=artist:${encodeURIComponent(artist)}&fmt=json&limit=10`
+      );
+      const data = await resp.json();
+      if (data.recordings && data.recordings.length > 0) {
+        // Pick a random track from this artist
+        const randomTrack = data.recordings[Math.floor(Math.random() * data.recordings.length)];
+
+        // Attach cover art (if available)
+        const releaseId = randomTrack.releases?.[0]?.id;
+        randomTrack.cover = releaseId 
+          ? `https://coverartarchive.org/release/${releaseId}/front-250`
+          : placeholder();
+
+        playlist.push(randomTrack);
+      }
+    } catch (e) {
+      console.error("Error fetching for artist:", artist, e);
+    }
+  }
+
+  if (!playlist.length) {
+    alert("No tracks could be generated.");
+    return;
+  }
+
+  // Save playlist
+  musicifyData.playlists["🎲 Suggested Mix"] = playlist;
+  saveData();
+
+  // Display playlist
+  sectionTitle.textContent = "🎲 Suggested Mix";
+  currentList = playlist;
+  renderResults(playlist);
+}
 
   </script>
 </body>
