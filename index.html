@@ -238,45 +238,51 @@ h3.playlist-name {
   </style>
 </head>
 <body>
-    <div id="container">
-    <nav>
-      <button onclick="showHome()">🏠 Home</button>
-      <button onclick="showFavorites()">❤️ Favorites</button>
-      <button onclick="showHistory()">⏱️ History</button>
-      <button onclick="showPlaylists()">🎶 Playlists</button>
-    </nav>
-    <main>
-      <div id="searchbar">
-        <input id="query" placeholder="What do you want to listen to?">
-        <button id="searchbtn" onclick="search(query.value)">Search</button>
-      </div>
-      <div id="status">Search for your favorite music 🎧</div>
-      <h2 id="section-title">Search Results</h2>
-      <div id="results"></div>
-    </main>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">Musicify 🎵</div>
+    <a class="nav-item" onclick="showHome()">🏠 Home</a>
+    <a class="nav-item" onclick="showFavorites()">❤️ Favorites</a>
+    <a class="nav-item" onclick="showHistory()">⏱️ History</a>
+    <a class="nav-item" onclick="showPlaylists()">🎶 Playlists</a>
   </div>
-  <footer>
-    <div id="player-top">
-      <div id="player-info">
-        <img id="player-cover" src="https://via.placeholder.com/50" alt="">
-        <div>
-          <div id="player-title">No track</div>
-          <div id="player-artist">---</div>
-        </div>
-      </div>
-      <div id="player-controls">
-        <button onclick="prevTrack()">⏮️</button>
-        <button id="play-btn" onclick="togglePlay()">▶️</button>
-        <button onclick="nextTrack()">⏭️</button>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="searchbar">
+      <input id="query" class="search-input" placeholder="What do you want to listen to?">
+<button id="searchbtn" onclick="search(query.value)">Search</button>   
+ </div>
+
+    <div class="status" id="status">Search for your favorite music 🎧</div>
+    <h2 class="section-title" id="section-title">Search Results</h2>
+    <div class="results-grid" id="results"></div>
+  </div>
+
+  <!-- Music Player -->
+  <div class="player">
+    <div class="player-info">
+      <img id="player-cover" src="https://via.placeholder.com/64" alt="">
+      <div>
+        <div id="player-title">No track</div>
+        <div id="player-artist">---</div>
       </div>
     </div>
-    <div id="progress-container">
-      <span id="time-current">0:00</span>
+    <div class="player-controls">
+      <button onclick="prevTrack()">⏮️</button>
+      <button id="play-btn" onclick="togglePlay()">▶️</button>
+      <button onclick="nextTrack()">⏭️</button>
+    </div>
+  </div>
+  <div class="progress-container">
+<span id="time-current">0:00</span>
       <input type="range" id="progress" value="0" min="0" max="100">
       <span id="time-total">0:00</span>
     </div>
     <div id="yt-player"></div>
-  </footer>
+    <div class="progress" id="progress"></div>
+  </div>
+
 
   <script>
     const YOUTUBE_API_KEY = "AIzaSyBcGIEyPh4g7TN2gV4CN_KAcO4SpjGJCFA"; // replace with your YouTube API key
