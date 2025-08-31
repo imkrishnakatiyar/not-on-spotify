@@ -577,7 +577,7 @@ h3.playlist-name {
     async function search(q) {
       if (!q) return;
       statusBox.textContent = "Searching...";
-      const resp = await fetch(`https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=12`);
+      const resp = await fetch(`https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=20`);
       const data = await resp.json();
       searchResults = data.recordings || [];
       currentList = searchResults;
