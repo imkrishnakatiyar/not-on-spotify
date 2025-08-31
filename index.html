@@ -586,58 +586,62 @@ h3.playlist-name {
     }
 
     function renderResults(items) {
-      resultsEl.innerHTML = '';
-      items.forEach((rec, index) => {
-        const card = document.createElement('div');
-        card.className = 'card';
+  resultsEl.innerHTML = '';
+  items.forEach((rec, index) => {
+    const releaseId = rec.releases?.[0]?.id;
 
-        const img = document.createElement('img');
-        img.className = 'card-img';
-        const releaseId = rec.releases?.[0]?.id;
-        img.src = releaseId ? `https://coverartarchive.org/release/${releaseId}/front-250` : placeholder();
+    // 🚫 Skip tracks without cover art
+    if (!releaseId) return;
 
-        const title = document.createElement('div');
-        title.className = 'card-title';
-        title.textContent = rec.title || 'Untitled';
+    const card = document.createElement('div');
+    card.className = 'card';
 
-        const subtitle = document.createElement('div');
-        subtitle.className = 'card-subtitle';
-        const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
-        subtitle.textContent = artists;
+    const img = document.createElement('img');
+    img.className = 'card-img';
+    img.src = `https://coverartarchive.org/release/${releaseId}/front-250`;
 
-        const actions = document.createElement('div');
-        actions.className = 'card-actions';
+    const title = document.createElement('div');
+    title.className = 'card-title';
+    title.textContent = rec.title || 'Untitled';
 
-        const favBtn = document.createElement('button');
-        favBtn.className = 'fav-btn';
-        favBtn.textContent = '❤️';
-        if (musicifyData.favorites.find(t => t.id === rec.id)) favBtn.classList.add('active');
-        favBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggleFavorite(rec);
-          favBtn.classList.toggle('active');
-        });
+    const subtitle = document.createElement('div');
+    subtitle.className = 'card-subtitle';
+    const artists = rec['artist-credit']?.map(a => a.name).join(', ') || 'Unknown artist';
+    subtitle.textContent = artists;
 
-        const plBtn = document.createElement('button');
-        plBtn.className = 'playlist-btn';
-        plBtn.textContent = '➕ Playlist';
-        plBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          addToPlaylist(rec);
-        });
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
 
-        actions.appendChild(favBtn);
-        actions.appendChild(plBtn);
+    const favBtn = document.createElement('button');
+    favBtn.className = 'fav-btn';
+    favBtn.textContent = '❤️';
+    if (musicifyData.favorites.find(t => t.id === rec.id)) favBtn.classList.add('active');
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(rec);
+      favBtn.classList.toggle('active');
+    });
 
-        card.appendChild(img);
-        card.appendChild(title);
-        card.appendChild(subtitle);
-        card.appendChild(actions);
-        card.addEventListener('click', () => playTrack(index, items));
+    const plBtn = document.createElement('button');
+    plBtn.className = 'playlist-btn';
+    plBtn.textContent = '➕ Playlist';
+    plBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addToPlaylist(rec);
+    });
 
-        resultsEl.appendChild(card);
-      });
-    }
+    actions.appendChild(favBtn);
+    actions.appendChild(plBtn);
+
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(subtitle);
+    card.appendChild(actions);
+    card.addEventListener('click', () => playTrack(index, items));
+
+    resultsEl.appendChild(card);
+  });
+}
 
     function toggleFavorite(rec) {
       const exists = musicifyData.favorites.find(t => t.id === rec.id);
