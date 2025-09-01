@@ -896,7 +896,35 @@ bottomPlayer.addEventListener("click", () => {
 function closeExpanded() {
   expandedPlayer.classList.remove("active");
 }
+const lang = rec.language || rec.releases?.[0]?.['text-representation']?.language || "unknown";
+rec.lang = lang;
 
+function getUserLanguageStats() {
+  const counts = {};
+  musicifyData.history.forEach(track => {
+    const lang = track.lang || "unknown";
+    counts[lang] = (counts[lang] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .sort((a,b) => b[1] - a[1]) // sort by frequency
+    .map(([lang]) => lang);
+}
+const userLangOrder = getUserLanguageStats();
+
+searchResults.sort((a, b) => {
+  const langA = a.language || a.releases?.[0]?.['text-representation']?.language || "unknown";
+  const langB = b.language || b.releases?.[0]?.['text-representation']?.language || "unknown";
+
+  const rankA = userLangOrder.indexOf(langA);
+  const rankB = userLangOrder.indexOf(langB);
+
+  // If both languages exist in ranking, prefer higher-ranked
+  if (rankA !== -1 && rankB !== -1) return rankA - rankB;
+  if (rankA !== -1) return -1;
+  if (rankB !== -1) return 1;
+
+  return 0; // fallback keep as-is
+});
   </script>
 </body>
 </html>
