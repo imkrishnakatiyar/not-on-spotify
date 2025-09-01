@@ -583,6 +583,22 @@ h3.playlist-name {
       currentList = searchResults;
       renderResults(searchResults);
       statusBox.textContent = searchResults.length ? `Found ${searchResults.length} tracks` : "No results";
+const userLangOrder = getUserLanguageStats();
+
+searchResults.sort((a, b) => {
+  const langA = a.language || a.releases?.[0]?.['text-representation']?.language || "unknown";
+  const langB = b.language || b.releases?.[0]?.['text-representation']?.language || "unknown";
+
+  const rankA = userLangOrder.indexOf(langA);
+  const rankB = userLangOrder.indexOf(langB);
+
+  // If both languages exist in ranking, prefer higher-ranked
+  if (rankA !== -1 && rankB !== -1) return rankA - rankB;
+  if (rankA !== -1) return -1;
+  if (rankB !== -1) return 1;
+
+  return 0; // fallback keep as-is
+});
     }
 
     function renderResults(items) {
@@ -909,22 +925,7 @@ function getUserLanguageStats() {
     .sort((a,b) => b[1] - a[1]) // sort by frequency
     .map(([lang]) => lang);
 }
-const userLangOrder = getUserLanguageStats();
 
-searchResults.sort((a, b) => {
-  const langA = a.language || a.releases?.[0]?.['text-representation']?.language || "unknown";
-  const langB = b.language || b.releases?.[0]?.['text-representation']?.language || "unknown";
-
-  const rankA = userLangOrder.indexOf(langA);
-  const rankB = userLangOrder.indexOf(langB);
-
-  // If both languages exist in ranking, prefer higher-ranked
-  if (rankA !== -1 && rankB !== -1) return rankA - rankB;
-  if (rankA !== -1) return -1;
-  if (rankB !== -1) return 1;
-
-  return 0; // fallback keep as-is
-});
   </script>
 </body>
 </html>
