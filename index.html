@@ -841,7 +841,7 @@ document.getElementById('query').addEventListener('input', (e) => {
     return;
   }
 
-  // 1️⃣ Get languages user has listened to
+  // 1️⃣ Determine all languages the user has listened to
   const userLangs = new Set();
   musicifyData.history.forEach(track => {
     const lang = track.language || track.releases?.[0]?.['text-representation']?.language || "unknown";
@@ -867,22 +867,19 @@ document.getElementById('query').addEventListener('input', (e) => {
       const data = await resp.json();
       if (!data.recordings || data.recordings.length === 0) continue;
 
-      let candidateTracks;
-
+      // Filter tracks that match any language the user has listened to
+      let candidateTracks = [];
       if (userLangs.size) {
-        // Filter tracks by preferred languages
         candidateTracks = data.recordings.filter(r => {
           const lang = r.language || r.releases?.[0]?.['text-representation']?.language || "unknown";
           return userLangs.has(lang);
         });
       }
 
-      // Fallback: if no preferred languages or no tracks in preferred languages
-      if (!candidateTracks || candidateTracks.length === 0) {
-        candidateTracks = data.recordings;
-      }
+      // Fallback: if no tracks match preferred languages, use all tracks (old behavior)
+      if (!candidateTracks.length) candidateTracks = data.recordings;
 
-      // Pick a random track
+      // Pick a random track from candidates
       const randomTrack = candidateTracks[Math.floor(Math.random() * candidateTracks.length)];
 
       // Attach cover art if available
