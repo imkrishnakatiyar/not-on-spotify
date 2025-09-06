@@ -841,7 +841,19 @@ async function generatePlaylistFromHistory() {
     return;
   }
 
-  // Collect unique artists from history
+  // 1️⃣ Get languages user has listened to
+  const userLangs = new Set();
+  musicifyData.history.forEach(track => {
+    const lang = track.language || track.releases?.[0]?.['text-representation']?.language || "unknown";
+    if (lang !== "unknown") userLangs.add(lang);
+  });
+
+  if (!userLangs.size) {
+    alert("Couldn’t determine your preferred languages from history.");
+    return;
+  }
+
+  // 2️⃣ Collect unique artists from history
   const artistsSet = new Set();
   musicifyData.history.forEach(track => {
     const credits = track['artist-credit'] || [];
@@ -849,31 +861,33 @@ async function generatePlaylistFromHistory() {
   });
   const artists = Array.from(artistsSet);
 
-  if (!artists.length) {
-    alert("Couldn’t find artists in history.");
-    return;
-  }
-
   let playlist = [];
 
   for (let artist of artists) {
     try {
-      // Fetch random recordings for each artist
+      // Fetch random recordings for the artist
       const resp = await fetch(
-        `https://musicbrainz.org/ws/2/recording?query=artist:${encodeURIComponent(artist)}&fmt=json&limit=10`
+        `https://musicbrainz.org/ws/2/recording?query=artist:${encodeURIComponent(artist)}&fmt=json&limit=20`
       );
       const data = await resp.json();
       if (data.recordings && data.recordings.length > 0) {
-        // Pick a random track from this artist
-        const randomTrack = data.recordings[Math.floor(Math.random() * data.recordings.length)];
+        // Filter recordings by user's preferred languages
+        const filtered = data.recordings.filter(r => {
+          const lang = r.language || r.releases?.[0]?.['text-representation']?.language || "unknown";
+          return userLangs.has(lang);
+        });
 
-        // Attach cover art (if available)
-        const releaseId = randomTrack.releases?.[0]?.id;
-        randomTrack.cover = releaseId 
-          ? `https://coverartarchive.org/release/${releaseId}/front-250`
-          : placeholder();
+        if (filtered.length) {
+          const randomTrack = filtered[Math.floor(Math.random() * filtered.length)];
 
-        playlist.push(randomTrack);
+          // Attach cover art if available
+          const releaseId = randomTrack.releases?.[0]?.id;
+          randomTrack.cover = releaseId
+            ? `https://coverartarchive.org/release/${releaseId}/front-250`
+            : placeholder();
+
+          playlist.push(randomTrack);
+        }
       }
     } catch (e) {
       console.error("Error fetching for artist:", artist, e);
@@ -881,7 +895,7 @@ async function generatePlaylistFromHistory() {
   }
 
   if (!playlist.length) {
-    alert("No tracks could be generated.");
+    alert("No tracks could be generated in your preferred languages.");
     return;
   }
 
@@ -894,6 +908,9 @@ async function generatePlaylistFromHistory() {
   currentList = playlist;
   renderResults(playlist);
 }
+
+
+ 
 const bottomPlayer = document.querySelector(".player");
 const expandedPlayer = document.getElementById("expanded-player");
 
