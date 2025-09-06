@@ -835,7 +835,7 @@ document.getElementById('query').addEventListener('input', (e) => {
     search(q);
   }, 500);
 });
-async function generatePlaylistFromHistory() {
+    async function generatePlaylistFromHistory() {
   if (!musicifyData.history.length) {
     alert("No history available to generate a playlist.");
     return;
@@ -847,11 +847,6 @@ async function generatePlaylistFromHistory() {
     const lang = track.language || track.releases?.[0]?.['text-representation']?.language || "unknown";
     if (lang !== "unknown") userLangs.add(lang);
   });
-
-  if (!userLangs.size) {
-    alert("Couldn’t determine your preferred languages from history.");
-    return;
-  }
 
   // 2️⃣ Collect unique artists from history
   const artistsSet = new Set();
@@ -865,37 +860,46 @@ async function generatePlaylistFromHistory() {
 
   for (let artist of artists) {
     try {
-      // Fetch random recordings for the artist
+      // Fetch recordings for each artist
       const resp = await fetch(
         `https://musicbrainz.org/ws/2/recording?query=artist:${encodeURIComponent(artist)}&fmt=json&limit=20`
       );
       const data = await resp.json();
-      if (data.recordings && data.recordings.length > 0) {
-        // Filter recordings by user's preferred languages
-        const filtered = data.recordings.filter(r => {
+      if (!data.recordings || data.recordings.length === 0) continue;
+
+      let candidateTracks;
+
+      if (userLangs.size) {
+        // Filter tracks by preferred languages
+        candidateTracks = data.recordings.filter(r => {
           const lang = r.language || r.releases?.[0]?.['text-representation']?.language || "unknown";
           return userLangs.has(lang);
         });
-
-        if (filtered.length) {
-          const randomTrack = filtered[Math.floor(Math.random() * filtered.length)];
-
-          // Attach cover art if available
-          const releaseId = randomTrack.releases?.[0]?.id;
-          randomTrack.cover = releaseId
-            ? `https://coverartarchive.org/release/${releaseId}/front-250`
-            : placeholder();
-
-          playlist.push(randomTrack);
-        }
       }
+
+      // Fallback: if no preferred languages or no tracks in preferred languages
+      if (!candidateTracks || candidateTracks.length === 0) {
+        candidateTracks = data.recordings;
+      }
+
+      // Pick a random track
+      const randomTrack = candidateTracks[Math.floor(Math.random() * candidateTracks.length)];
+
+      // Attach cover art if available
+      const releaseId = randomTrack.releases?.[0]?.id;
+      randomTrack.cover = releaseId
+        ? `https://coverartarchive.org/release/${releaseId}/front-250`
+        : placeholder();
+
+      playlist.push(randomTrack);
+
     } catch (e) {
       console.error("Error fetching for artist:", artist, e);
     }
   }
 
   if (!playlist.length) {
-    alert("No tracks could be generated in your preferred languages.");
+    alert("No tracks could be generated.");
     return;
   }
 
