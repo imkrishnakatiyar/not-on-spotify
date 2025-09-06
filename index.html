@@ -581,6 +581,44 @@ h3.playlist-name {
       const data = await resp.json();
       searchResults = data.recordings || [];
       currentList = searchResults;
+      // 🔎 Fetch YouTube view counts for each track
+  for (let rec of searchResults) {
+    const artists = rec['artist-credit']?.map(a => a.name).join(', ') || '';
+    const ytQuery = encodeURIComponent(`${rec.title} ${artists}`);
+
+    try {
+      // First search for video
+      const ytResp = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=id&type=video&maxResults=1&q=${ytQuery}&key=${YOUTUBE_API_KEY}`
+      );
+      const ytData = await ytResp.json();
+
+      if (ytData.items.length) {
+        const videoId = ytData.items[0].id.videoId;
+
+        // Then fetch statistics
+        const statsResp = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${YOUTUBE_API_KEY}`
+        );
+        const statsData = await statsResp.json();
+
+        rec.videoId = videoId;
+        rec.viewCount = parseInt(statsData.items[0].statistics.viewCount) || 0;
+      } else {
+        rec.viewCount = 0;
+      }
+    } catch (err) {
+      console.error("YT fetch error:", err);
+      rec.viewCount = 0;
+    }
+  }
+
+  // 📊 Sort by viewCount descending
+  searchResults.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+
+  renderResults(searchResults);
+  statusBox.textContent = searchResults.length ? `Sorted by YouTube popularity` : "No results";
+}
       renderResults(searchResults);
       statusBox.textContent = searchResults.length ? `Found ${searchResults.length} tracks` : "No results";
 const userLangOrder = getUserLanguageStats();
